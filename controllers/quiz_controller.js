@@ -11,10 +11,24 @@ exports.load = function(req, res, next, quizId) {
   ).catch(function(error) { next(error);});
 };
 
+var formatSearchParam = function(search) {
+  result = search.trim();
+  result = result.split(' ').join('%');
+  return '%'+result+'%';
+}
+
 exports.index = function(req, res) {
-  models.Quiz.findAll().then(function(quizes) {
-     res.render('quizes/index', { quizes: quizes});
-  }).catch(function(error) { next(error);})
+  if (req.query.search) {
+    var searchFormatted = formatSearchParam(req.query.search);
+    models.Quiz.findAll({where: ["pregunta like ?", searchFormatted], order:'pregunta ASC'})
+      .then(function(quizes) {
+        res.render('quizes/index', { quizes: quizes });
+    }).catch(function(error) { next(error);})
+  } else {
+    models.Quiz.findAll().then(function(quizes) {
+       res.render('quizes/index', { quizes: quizes });
+    }).catch(function(error) { next(error);})
+  }
 };
 
 exports.show = function(req, res) {

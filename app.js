@@ -27,14 +27,26 @@ app.use(session());
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Helpers dinamicos:
 app.use(function(req, res, next) {
-  // guardar path en session.redir para despues de login
   if (!req.path.match(/\/login|\/logout/)) {
     req.session.redir = req.path;
   }
-  // Hacer visible req.session en las vistas
   res.locals.session = req.session;
+  next();
+});
+
+// Middleware auto-logout
+app.use(function(req, res, next) {
+  if (req.session.user) {
+    var currentTime = new Date().getTime();
+    if (req.session.lastAction
+       && currentTime - req.session.lastAction<120000) {
+        req.session.lastAction = currentTime;
+    } else {
+      delete req.session.user;
+      delete req.session.lastAction;
+    }
+  }
   next();
 });
 

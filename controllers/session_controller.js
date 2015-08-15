@@ -23,11 +23,13 @@ exports.create = function(req, res) {
             return;
         }
         req.session.user = {id:user.id, username:user.username};
+        req.session.lastAction = new Date().getTime();
         res.redirect(req.session.redir.toString());
     });
 };
 
 exports.destroy = function(req, res) {
     delete req.session.user;
+    delete req.session.lasAction;
     res.redirect(req.session.redir.toString());
 };
